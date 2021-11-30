@@ -34,13 +34,13 @@ Resources:
     Properties:
       CodeUri: s3://bucket/key
       Handler: index.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
   MyFn:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: s3://bucket/key
       Handler: index.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
       Events:
         Cognito:
           Type: Api
@@ -48,18 +48,36 @@ Resources:
             RestApiId: !Ref MyApiWithCognitoAuth
             Method: get
             Path: /cognito
+        CognitoAnyMethod:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApiWithCognitoAuth
+            Method: any
+            Path: /any/cognito
         LambdaToken:
           Type: Api
           Properties:
             RestApiId: !Ref MyApiWithLambdaTokenAuth
             Method: get
             Path: /lambda-token
+        LambdaTokenAnyMethod:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApiWithLambdaTokenAuth
+            Method: any
+            Path: /any/lambda-token
         LambdaRequest:
           Type: Api
           Properties:
             RestApiId: !Ref MyApiWithLambdaRequestAuth
             Method: get
             Path: /lambda-request
+        LambdaRequestAnyMethod:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApiWithLambdaRequestAuth
+            Method: any
+            Path: /any/lambda-request
   MyUserPool:
     Type: AWS::Cognito::UserPool
     Properties:

@@ -11,7 +11,7 @@ Resources:
     Properties:
       CodeUri: s3://bucket/key
       Handler: index.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
       Events:
         MyApiWithAwsIamAuth:
           Type: Api
@@ -19,11 +19,25 @@ Resources:
             RestApiId: !Ref MyApiWithAwsIamAuth
             Path: /
             Method: post
+        MyApiWithAwsIamAuthAnyMethod:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApiWithAwsIamAuth
+            Path: /any/iam
+            Method: any
         MyApiWithNoAuth:
           Type: Api
           Properties:
             RestApiId: !Ref MyApiWithAwsIamAuth
             Path: /
             Method: get
+            Auth:
+              Authorizer: 'NONE'
+        MyApiWithNoAuthAnyMethod:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MyApiWithAwsIamAuth
+            Path: /any/none
+            Method: any
             Auth:
               Authorizer: 'NONE'

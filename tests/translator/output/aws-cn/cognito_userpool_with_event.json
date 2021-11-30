@@ -6,44 +6,60 @@
         "LambdaConfig": {
           "PreSignUp": {
             "Fn::GetAtt": [
-              "ImplicitApiFunction", "Arn"
+              "ImplicitApiFunction",
+              "Arn"
             ]
           },
-          "PreAuthentication": "Test",
-          "Test1": {
+          "PostConfirmation": {
             "Fn::GetAtt": [
               "ImplicitApiFunction",
               "Arn"
             ]
           },
-          "Test2": {
+          "VerifyAuthChallengeResponse": {
             "Fn::GetAtt": [
               "ImplicitApiFunction",
               "Arn"
             ]
           }
-        }
+        },
+        "Policies": {
+          "PasswordPolicy": {
+            "MinimumLength": 8
+          }
+        },
+        "Schema": [
+          {
+            "AttributeDataType": "String",
+            "Name": "email",
+            "Required": false
+          }
+        ],
+        "UsernameAttributes": [
+          "email"
+        ],
+        "UserPoolName": "UserPoolName"
       }
     },
     "ImplicitApiFunction": {
       "Type": "AWS::Lambda::Function",
       "Properties": {
-        "Handler": "index.gethtml", 
         "Code": {
-          "S3Bucket": "sam-demo-bucket", 
+          "S3Bucket": "sam-demo-bucket",
           "S3Key": "member_portal.zip"
-        }, 
+        },
+        "Handler": "index.gethtml",
         "Role": {
           "Fn::GetAtt": [
-            "ImplicitApiFunctionRole", 
+            "ImplicitApiFunctionRole",
             "Arn"
           ]
-        }, 
-        "Runtime": "nodejs4.3", 
+        },
+        "Runtime": "nodejs12.x",
         "Tags": [
           {
-            "Value": "SAM", 
-            "Key": "lambda:createdBy"
+            "Key": "lambda:createdBy",
+            "Value": "SAM"
           }
         ]
       }
@@ -51,9 +67,6 @@
     "ImplicitApiFunctionRole": {
       "Type": "AWS::IAM::Role",
       "Properties": {
-        "ManagedPolicyArns": [
-          "arn:aws-cn:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-        ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
@@ -69,20 +82,32 @@
               }
             }
           ]
-        }
+        },
+        "ManagedPolicyArns": [
+          "arn:aws-cn:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Tags": [
+          {
+            "Key": "lambda:createdBy",
+            "Value": "SAM"
+          }
+        ]
       }
-    },    
+    },
     "ImplicitApiFunctionCognitoPermission": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "Action": "lambda:invokeFunction",
+        "Action": "lambda:InvokeFunction",
         "FunctionName": {
           "Ref": "ImplicitApiFunction"
         },
-        "EventSourceToken": {
-          "Ref": "UserPool"
-        },
-        "Principal": "cognito-idp.amazonaws.com"
+        "Principal": "cognito-idp.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "UserPool",
+            "Arn"
+          ]
+        }
       }
     }
   }

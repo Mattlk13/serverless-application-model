@@ -6,6 +6,12 @@
         "ManagedPolicyArns": [
           "arn:aws-us-gov:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
         ],
+        "Tags": [
+          {
+            "Value": "SAM",
+            "Key": "lambda:createdBy"
+          }
+        ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
@@ -28,7 +34,7 @@
       "Type": "AWS::ApiGateway::Stage",
       "Properties": {
         "DeploymentId": {
-          "Ref": "HtmlApiDeploymenta488cfa4f9"
+          "Ref": "HtmlApiDeployment2274fb58ae"
         },
         "RestApiId": {
           "Ref": "HtmlApi"
@@ -39,7 +45,7 @@
     "HtmlFunctionIamPermissionProd": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "Action": "lambda:invokeFunction",
+        "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
         "FunctionName": {
           "Ref": "HtmlFunction"
@@ -52,6 +58,27 @@
               "__ApiId__": {
                 "Ref": "HtmlApi"
               }
+            }
+          ]
+        }
+      }
+    },
+    "HtmlFunctionAnyIamPermissionProd": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": {
+          "Ref": "HtmlFunction"
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": {
+          "Fn::Sub": [
+            "arn:aws-us-gov:execute-api:${AWS::Region}:${AWS::AccountId}:${__ApiId__}/${__Stage__}/*/any/iam",
+            {
+              "__ApiId__": {
+                "Ref": "HtmlApi"
+              },
+              "__Stage__": "*"
             }
           ]
         }
@@ -117,6 +144,34 @@
                 },
                 "responses": {}
               }
+            },
+            "/any/iam": {
+              "x-amazon-apigateway-any-method": {
+                "x-amazon-apigateway-integration": {
+                  "type": "aws_proxy",
+                  "httpMethod": "POST",
+                  "uri": {
+                    "Fn::Sub": "arn:aws-us-gov:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HtmlFunction.Arn}/invocations"
+                  },
+                  "credentials": "arn:aws:iam::*:user/*"
+                },
+                "responses": {},
+                "security": [
+                  {
+                    "AWS_IAM": []
+                  }
+                ],
+                "requestBody": {
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/user"
+                      }
+                    }
+                  },
+                  "required": true
+                }
+              }
             }
           },
           "openapi": "3.0",
@@ -151,19 +206,19 @@
         }
       }
     },
-    "HtmlApiDeploymenta488cfa4f9": {
+    "HtmlApiDeployment2274fb58ae": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
           "Ref": "HtmlApi"
         },
-        "Description": "RestApi deployment id: a488cfa4f9c73604187a3a5dfa5f333ef2c52e1e"
+        "Description": "RestApi deployment id: 2274fb58ae60fc2a69a3feb3b433d9bcf6947be5"
       }
     },
     "HtmlFunctionGetHtmlPermissionProd": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "Action": "lambda:invokeFunction",
+        "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
         "FunctionName": {
           "Ref": "HtmlFunction"
@@ -193,7 +248,7 @@
             "Arn"
           ]
         },
-        "Runtime": "nodejs4.3",
+        "Runtime": "nodejs12.x",
         "Tags": [
           {
             "Value": "SAM",

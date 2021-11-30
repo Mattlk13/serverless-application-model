@@ -62,7 +62,9 @@ This will:
 
 - Create an Alias with ``<alias-name>`` 
 - Create & publish a Lambda version with the latest code & configuration 
-  derived from the ``CodeUri`` property 
+  derived from the ``CodeUri`` property. Optionally it is possible to specify
+  property `AutoPublishCodeSha256` that will override the hash computed for
+  Lambda ``CodeUri`` property.
 - Point the Alias to the latest published version 
 - Point all event sources to the Alias & not to the function 
 - When the ``CodeUri`` property of ``AWS::Serverless::Function`` changes, 
@@ -93,7 +95,7 @@ resource:
     Type: AWS::Serverless::Function
     Properties:
       Handler: index.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
       AutoPublishAlias: live
       DeploymentPreference:
         Type: Linear10PercentEvery10Minutes
@@ -163,10 +165,10 @@ resource:
             Action:
               - "lambda:InvokeFunction"
             Resource: !GetAtt MyLambdaFunction.Arn
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
       FunctionName: 'CodeDeployHook_preTrafficHook'
       DeploymentPreference:
-        Enabled: false
+        Enabled: False
         Role: ""
       Environment:
         Variables:
@@ -188,7 +190,7 @@ NOTE: Verify that your AWS SDK version supports PutLifecycleEventHookExecutionSt
 
 .. _PutLifecycleEventHookExecutionStatus: https://docs.aws.amazon.com/codedeploy/latest/APIReference/API_PutLifecycleEventHookExecutionStatus.html
 
-.. _Here: https://github.com/awslabs/serverless-application-model/blob/master/examples/2016-10-31/lambda_safe_deployments/src/preTrafficHook.js
+.. _Here: https://github.com/aws/serverless-application-model/blob/d168f371f494196a57032313075db9faae5587e4/examples/2016-10-31/lambda_safe_deployments/src/preTrafficHook.js
 
 Traffic Shifting Configurations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -273,7 +275,7 @@ Hooks are extremely powerful because:
 
     FunctionName: 'CodeDeployHook_preTrafficHook'
     DeploymentPreference:
-        Enabled: false
+        Enabled: False
     Policies:
         - Version: "2012-10-17"
           Statement:

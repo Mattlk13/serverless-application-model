@@ -58,7 +58,7 @@
           ]
         },
         "Timeout": 3,
-        "Runtime": "nodejs8.10"
+        "Runtime": "nodejs12.x"
       },
       "Condition": "explicithello2condition"
     },
@@ -67,6 +67,12 @@
       "Properties": {
         "ManagedPolicyArns": [
           "arn:aws-us-gov:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Tags": [
+          {
+            "Value": "SAM",
+            "Key": "lambda:createdBy"
+          }
         ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
@@ -108,7 +114,7 @@
           ]
         },
         "Timeout": 3,
-        "Runtime": "nodejs8.10"
+        "Runtime": "nodejs12.x"
       },
       "Condition": "explicithello1condition"
     },
@@ -143,6 +149,12 @@
         "ManagedPolicyArns": [
           "arn:aws-us-gov:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
         ],
+        "Tags": [
+          {
+            "Value": "SAM",
+            "Key": "lambda:createdBy"
+          }
+        ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
           "Statement": [
@@ -165,7 +177,7 @@
     "explicithello1ApiEventPermissionProd": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "Action": "lambda:invokeFunction",
+        "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
         "FunctionName": {
           "Ref": "explicithello1"
@@ -205,14 +217,14 @@
           ]
         },
         "Timeout": 3,
-        "Runtime": "nodejs8.10"
+        "Runtime": "nodejs12.x"
       },
       "Condition": "implicithello2condition"
     },
     "implicithello1ApiEventPermissionProd": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "Action": "lambda:invokeFunction",
+        "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
         "FunctionName": {
           "Ref": "implicithello1"
@@ -263,14 +275,14 @@
           ]
         },
         "Timeout": 3,
-        "Runtime": "nodejs8.10"
+        "Runtime": "nodejs12.x"
       },
       "Condition": "implicithello1condition"
     },
     "explicithello2ApiEventPermissionProd": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "Action": "lambda:invokeFunction",
+        "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
         "FunctionName": {
           "Ref": "explicithello2"
@@ -398,7 +410,7 @@
     "implicithello2ApiEventPermissionProd": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "Action": "lambda:invokeFunction",
+        "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
         "FunctionName": {
           "Ref": "implicithello2"
@@ -422,6 +434,12 @@
       "Properties": {
         "ManagedPolicyArns": [
           "arn:aws-us-gov:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Tags": [
+          {
+            "Value": "SAM",
+            "Key": "lambda:createdBy"
+          }
         ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
@@ -544,6 +562,12 @@
       "Properties": {
         "ManagedPolicyArns": [
           "arn:aws-us-gov:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Tags": [
+          {
+            "Value": "SAM",
+            "Key": "lambda:createdBy"
+          }
         ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",

@@ -11,6 +11,9 @@
     "MySqsQueue": {
       "Type": "AWS::SQS::Queue"
     },
+    "MySnsTopic": {
+        "Type": "AWS::SNS::Topic"
+    },
     "MyFunctionForBatchingExampleStream": {
       "Type": "AWS::Lambda::EventSourceMapping",
       "Properties": {
@@ -85,6 +88,43 @@
                 }
               ]
             }
+          },
+          {
+            "PolicyName": "MyFunctionForBatchingExampleDynamoDBStreamEventSQSPolicy",
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "sqs:SendMessage",
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::GetAtt": [
+                      "MySqsQueue",
+                      "Arn"
+                    ]
+                  }
+                }
+              ]
+            }
+          },
+          {
+              "PolicyDocument": {
+                  "Statement": [
+                      {
+                          "Action": "sns:publish",
+                          "Effect": "Allow",
+                          "Resource": {
+                              "Ref": "MySnsTopic"
+                          }
+                      }
+                  ]
+              },
+              "PolicyName": "MyFunctionForBatchingExampleStreamEventSNSPolicy"
+          }
+        ],
+        "Tags": [
+          {
+            "Value": "SAM",
+            "Key": "lambda:createdBy"
           }
         ],
         "AssumeRolePolicyDocument": {
@@ -141,7 +181,9 @@
         "StartingPosition": "TRIM_HORIZON",
         "ParallelizationFactor": 8,
         "MaximumRetryAttempts": 100,
-        "BisectBatchOnFunctionError": true
+        "BisectBatchOnFunctionError": true,
+        "TumblingWindowInSeconds": 60,
+        "FunctionResponseTypes": ["ReportBatchItemFailures"]
       }
     },
     "MyFunctionForBatchingExample": {
@@ -149,7 +191,7 @@
       "Properties": {
         "Handler": "index.handler",
         "Code": {
-          "ZipFile": "\nexports.handler = async (event) => {\n    return {\n    statusCode: 200,\n    body: JSON.stringify(event),\n    headers: {}\n    }\n}\n"
+          "ZipFile": "exports.handler = async (event) => {\n    return {\n    statusCode: 200,\n    body: JSON.stringify(event),\n    headers: {}\n    }\n}\n"
         },
         "Role": {
           "Fn::GetAtt": [
@@ -157,7 +199,7 @@
             "Arn"
           ]
         },
-        "Runtime": "nodejs8.10",
+        "Runtime": "nodejs12.x",
         "Tags": [
           {
             "Value": "SAM",
@@ -181,7 +223,14 @@
         "FunctionName": {
           "Ref": "MyFunctionForBatchingExample"
         },
-        "StartingPosition": "LATEST"
+        "StartingPosition": "LATEST",
+        "DestinationConfig": {
+            "OnFailure": {
+                "Destination": {
+                    "Ref": "MySnsTopic"
+                }
+            }
+        }
       }
     },
     "KinesisStream": {

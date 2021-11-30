@@ -1,19 +1,24 @@
 import boto3
 
 
+class NoRegionFound(Exception):
+    pass
+
+
 class ArnGenerator(object):
+    BOTO_SESSION_REGION_NAME = None
 
     @classmethod
     def generate_arn(cls, partition, service, resource, include_account_id=True):
         if not service or not resource:
             raise RuntimeError("Could not construct ARN for resource.")
 
-        arn = 'arn:{0}:{1}:${{AWS::Region}}:'
+        arn = "arn:{0}:{1}:${{AWS::Region}}:"
 
         if include_account_id:
-            arn += '${{AWS::AccountId}}:'
+            arn += "${{AWS::AccountId}}:"
 
-        arn += '{2}'
+        arn += "{2}"
 
         return arn.format(partition, service, resource)
 
@@ -26,8 +31,7 @@ class ArnGenerator(object):
         :param policy_name: Name of the policy
         :return: ARN Of the managed policy
         """
-        return 'arn:{}:iam::aws:policy/{}'.format(ArnGenerator.get_partition_name(),
-                                                  policy_name)
+        return "arn:{}:iam::aws:policy/{}".format(ArnGenerator.get_partition_name(), policy_name)
 
     @classmethod
     def get_partition_name(cls, region=None):
@@ -41,15 +45,33 @@ class ArnGenerator(object):
         :param region: Optional name of the region
         :return: Partition name
         """
+
         if region is None:
             # Use Boto3 to get the region where code is running. This uses Boto's regular region resolution
             # mechanism, starting from AWS_DEFAULT_REGION environment variable.
-            region = boto3.session.Session().region_name
+
+            if ArnGenerator.BOTO_SESSION_REGION_NAME is None:
+                region = boto3.session.Session().region_name
+            else:
+                region = ArnGenerator.BOTO_SESSION_REGION_NAME
+
+        # If region is still None, then we could not find the region. This will only happen
+        # in the local context. When this is deployed, we will be able to find the region like
+        # we did before.
+        if region is None:
+            raise NoRegionFound("AWS Region cannot be found")
+
+        # setting default partition to aws, this will be overwritten by checking the region below
+        partition = "aws"
 
         region_string = region.lower()
         if region_string.startswith("cn-"):
-            return "aws-cn"
+            partition = "aws-cn"
+        elif region_string.startswith("us-iso-"):
+            partition = "aws-iso"
+        elif region_string.startswith("us-isob"):
+            partition = "aws-iso-b"
         elif region_string.startswith("us-gov"):
-            return "aws-us-gov"
-        else:
-            return "aws"
+            partition = "aws-us-gov"
+
+        return partition

@@ -14,7 +14,7 @@
             "Arn"
           ]
         },
-        "Runtime": "nodejs4.3",
+        "Runtime": "nodejs12.x",
         "Tags": [
           {
             "Value": "SAM",
@@ -28,6 +28,12 @@
       "Properties": {
         "ManagedPolicyArns": [
           "arn:aws-cn:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Tags": [
+          {
+            "Value": "SAM",
+            "Key": "lambda:createdBy"
+          }
         ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
@@ -47,13 +53,13 @@
         }
       }
     },
-    "ServerlessRestApiDeploymentc2741b5220": {
+    "ServerlessRestApiDeployment32042a0513": {
       "Type": "AWS::ApiGateway::Deployment",
       "Properties": {
         "RestApiId": {
           "Ref": "ServerlessRestApi"
         },
-        "Description": "RestApi deployment id: c2741b5220c940a753e3d1e18da6763aaba1c19b",
+        "Description": "RestApi deployment id: 32042a0513cd1c4e5c14794b306c4de10ca5c4af",
         "StageName": "Stage"
       }
     },
@@ -62,6 +68,12 @@
       "Properties": {
         "ManagedPolicyArns": [
           "arn:aws-cn:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        ],
+        "Tags": [
+          {
+            "Value": "SAM",
+            "Key": "lambda:createdBy"
+          }
         ],
         "AssumeRolePolicyDocument": {
           "Version": "2012-10-17",
@@ -84,7 +96,7 @@
     "NoApiParameterFunctionGetHtmlPermissionProd": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "Action": "lambda:invokeFunction",
+        "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
         "FunctionName": {
           "Ref": "NoApiParameterFunction"
@@ -106,7 +118,7 @@
       "Type": "AWS::ApiGateway::Stage",
       "Properties": {
         "DeploymentId": {
-          "Ref": "ServerlessRestApiDeploymentc2741b5220"
+          "Ref": "ServerlessRestApiDeployment32042a0513"
         },
         "RestApiId": {
           "Ref": "ServerlessRestApi"
@@ -174,7 +186,7 @@
     "ApiParameterFunctionGetHtmlPermissionProd": {
       "Type": "AWS::Lambda::Permission",
       "Properties": {
-        "Action": "lambda:invokeFunction",
+        "Action": "lambda:InvokeFunction",
         "Principal": "apigateway.amazonaws.com",
         "FunctionName": {
           "Ref": "ApiParameterFunction"
@@ -235,6 +247,12 @@
                     "type": "string",
                     "name": "id",
                     "in": "path"
+                  },
+                  {
+                    "required": false,
+                    "type": "string",
+                    "name": "full.type",
+                    "in": "query"
                   }
                 ]
               }
@@ -266,7 +284,7 @@
             "Arn"
           ]
         },
-        "Runtime": "nodejs4.3",
+        "Runtime": "nodejs12.x",
         "Tags": [
           {
             "Value": "SAM",

@@ -9,6 +9,7 @@ class SamResource(object):
     Any mutating methods also touch only "Properties" and "Type" attributes of the resource. This allows compatibility
     with any CloudFormation constructs, like DependsOn, Conditions etc.
     """
+
     type = None
     properties = {}
 
@@ -22,6 +23,8 @@ class SamResource(object):
         self.resource_dict = resource_dict
         self.type = resource_dict.get("Type")
         self.condition = resource_dict.get("Condition", None)
+        self.deletion_policy = resource_dict.get("DeletionPolicy", None)
+        self.update_replace_policy = resource_dict.get("UpdateReplacePolicy", None)
 
         # Properties is *not* required. Ex: SimpleTable resource has no required properties
         self.properties = resource_dict.get("Properties", {})
@@ -38,8 +41,21 @@ class SamResource(object):
         if self.condition:
 
             if not is_str()(self.condition, should_raise=False):
-                raise InvalidDocumentException([
-                    InvalidTemplateException("Every Condition member must be a string.")])
+                raise InvalidDocumentException([InvalidTemplateException("Every Condition member must be a string.")])
+
+        if self.deletion_policy:
+
+            if not is_str()(self.deletion_policy, should_raise=False):
+                raise InvalidDocumentException(
+                    [InvalidTemplateException("Every DeletionPolicy member must be a string.")]
+                )
+
+        if self.update_replace_policy:
+
+            if not is_str()(self.update_replace_policy, should_raise=False):
+                raise InvalidDocumentException(
+                    [InvalidTemplateException("Every UpdateReplacePolicy member must be a string.")]
+                )
 
         return SamResourceType.has_value(self.type)
 
@@ -58,11 +74,14 @@ class SamResourceType(Enum):
     """
     Enum of supported SAM types
     """
+
     Api = "AWS::Serverless::Api"
     Function = "AWS::Serverless::Function"
     SimpleTable = "AWS::Serverless::SimpleTable"
     Application = "AWS::Serverless::Application"
     LambdaLayerVersion = "AWS::Serverless::LayerVersion"
+    HttpApi = "AWS::Serverless::HttpApi"
+    StateMachine = "AWS::Serverless::StateMachine"
 
     @classmethod
     def has_value(cls, value):

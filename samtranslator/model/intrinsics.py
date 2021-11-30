@@ -1,39 +1,43 @@
 def fnGetAtt(logical_name, attribute_name):
-    return {'Fn::GetAtt': [logical_name, attribute_name]}
+    return {"Fn::GetAtt": [logical_name, attribute_name]}
 
 
 def ref(logical_name):
-    return {'Ref': logical_name}
+    return {"Ref": logical_name}
 
 
 def fnJoin(delimiter, values):
-    return {'Fn::Join': [delimiter, values]}
+    return {"Fn::Join": [delimiter, values]}
 
 
 def fnSub(string, variables=None):
     if variables:
-        return {'Fn::Sub': [string, variables]}
-    return {'Fn::Sub': string}
+        return {"Fn::Sub": [string, variables]}
+    return {"Fn::Sub": string}
 
 
 def fnOr(argument_list):
-    return {'Fn::Or': argument_list}
+    return {"Fn::Or": argument_list}
 
 
-def make_conditional(condition, data):
-    return {
-        'Fn::If': [
-            condition,
-            data,
-            {'Ref': 'AWS::NoValue'}
-        ]
-    }
+def fnAnd(argument_list):
+    return {"Fn::And": argument_list}
+
+
+def make_conditional(condition, true_data, false_data=None):
+    if false_data is None:
+        false_data = {"Ref": "AWS::NoValue"}
+    return {"Fn::If": [condition, true_data, false_data]}
+
+
+def make_not_conditional(condition):
+    return {"Fn::Not": [{"Condition": condition}]}
 
 
 def make_condition_or_list(conditions_list):
     condition_or_list = []
     for condition in conditions_list:
-        c = {'Condition': condition}
+        c = {"Condition": condition}
         condition_or_list.append(c)
     return condition_or_list
 
@@ -41,6 +45,12 @@ def make_condition_or_list(conditions_list):
 def make_or_condition(conditions_list):
     or_list = make_condition_or_list(conditions_list)
     condition = fnOr(or_list)
+    return condition
+
+
+def make_and_condition(conditions_list):
+    and_list = make_condition_or_list(conditions_list)
+    condition = fnAnd(and_list)
     return condition
 
 
@@ -90,7 +100,7 @@ def make_combined_condition(conditions_list, condition_name):
         new_condition_name = condition_name
         # If more than 1 new condition is needed, add a number to the end of the name
         if zero_based_num_conditions > 0:
-            new_condition_name = '{}{}'.format(condition_name, zero_based_num_conditions)
+            new_condition_name = "{}{}".format(condition_name, zero_based_num_conditions)
             zero_based_num_conditions -= 1
         new_condition_content = make_or_condition(conditions_list[:max_conditions])
         conditions_list = conditions_list[max_conditions:]
@@ -114,14 +124,14 @@ def make_shorthand(intrinsic_dict):
     :raises NotImplementedError: For intrinsic functions that don't support shorthands.
     """
     if "Ref" in intrinsic_dict:
-        return "${%s}" % intrinsic_dict['Ref']
+        return "${%s}" % intrinsic_dict["Ref"]
     elif "Fn::GetAtt" in intrinsic_dict:
         return "${%s}" % ".".join(intrinsic_dict["Fn::GetAtt"])
     else:
         raise NotImplementedError("Shorthanding is only supported for Ref and Fn::GetAtt")
 
 
-def is_instrinsic(input):
+def is_intrinsic(input):
     """
     Checks if the given input is an intrinsic function dictionary. Intrinsic function is a dictionary with single
     key that is the name of the intrinsics.
@@ -130,9 +140,7 @@ def is_instrinsic(input):
     :return: True, if yes
     """
 
-    if input is not None \
-            and isinstance(input, dict) \
-            and len(input) == 1:
+    if input is not None and isinstance(input, dict) and len(input) == 1:
 
         key = list(input.keys())[0]
         return key == "Ref" or key == "Condition" or key.startswith("Fn::")
@@ -149,11 +157,29 @@ def is_intrinsic_if(input):
     :return: True, if yes
     """
 
-    if not is_instrinsic(input):
+    if not is_intrinsic(input):
         return False
 
     key = list(input.keys())[0]
     return key == "Fn::If"
+
+
+def validate_intrinsic_if_items(items):
+    """
+    Validates Fn::If items
+
+    Parameters
+    ----------
+    items : list
+        Fn::If items
+
+    Raises
+    ------
+    ValueError
+        If the items are invalid
+    """
+    if not isinstance(items, list) or len(items) != 3:
+        raise ValueError("Fn::If requires 3 arguments")
 
 
 def is_intrinsic_no_value(input):
@@ -165,7 +191,7 @@ def is_intrinsic_no_value(input):
     :return: True, if yes
     """
 
-    if not is_instrinsic(input):
+    if not is_intrinsic(input):
         return False
 
     key = list(input.keys())[0]

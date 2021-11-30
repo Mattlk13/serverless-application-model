@@ -16,10 +16,16 @@ Resources:
           return response;
         };
       Handler: index.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
       Events:
         Api:
           Type: Api
           Properties:
             Method: Put
             Path: /get
+        Any:
+          Type: Api
+          Properties:
+            Method: any
+            Path: /any
+

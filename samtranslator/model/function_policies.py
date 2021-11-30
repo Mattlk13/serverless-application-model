@@ -3,7 +3,12 @@ from collections import namedtuple
 
 from six import string_types
 
-from samtranslator.model.intrinsics import is_instrinsic, is_intrinsic_if, is_intrinsic_no_value
+from samtranslator.model.intrinsics import (
+    is_intrinsic,
+    is_intrinsic_if,
+    is_intrinsic_no_value,
+    validate_intrinsic_if_items,
+)
 from samtranslator.model.exceptions import InvalidTemplateException
 
 PolicyEntry = namedtuple("PolicyEntry", "data type")
@@ -101,9 +106,11 @@ class FunctionPolicies(object):
         :param dict resource_properties: Properties of the resource
         :return: True if we can process this resource. False, otherwise
         """
-        return resource_properties is not None \
-            and isinstance(resource_properties, dict) \
+        return (
+            resource_properties is not None
+            and isinstance(resource_properties, dict)
             and self.POLICIES_PROPERTY_NAME in resource_properties
+        )
 
     def _get_type(self, policy):
         """
@@ -124,7 +131,7 @@ class FunctionPolicies(object):
             return self._get_type_from_intrinsic_if(policy)
 
         # Intrinsic functions are treated as managed policies by default
-        if is_instrinsic(policy):
+        if is_intrinsic(policy):
             return PolicyTypes.MANAGED_POLICY
 
         # Policy statement is a dictionary with the key "Statement" in it
@@ -147,10 +154,12 @@ class FunctionPolicies(object):
         :return: True, if this is a policy template. False if it is not
         """
 
-        return self._policy_template_processor is not None and \
-            isinstance(policy, dict) and \
-            len(policy) == 1 and \
-            self._policy_template_processor.has(list(policy.keys())[0]) is True
+        return (
+            self._policy_template_processor is not None
+            and isinstance(policy, dict)
+            and len(policy) == 1
+            and self._policy_template_processor.has(list(policy.keys())[0]) is True
+        )
 
     def _get_type_from_intrinsic_if(self, policy):
         """
@@ -161,8 +170,10 @@ class FunctionPolicies(object):
         """
         intrinsic_if_value = policy["Fn::If"]
 
-        if not len(intrinsic_if_value) == 3:
-            raise InvalidTemplateException("Fn::If requires 3 arguments")
+        try:
+            validate_intrinsic_if_items(intrinsic_if_value)
+        except ValueError as e:
+            raise InvalidTemplateException(e)
 
         if_data = intrinsic_if_value[1]
         else_data = intrinsic_if_value[2]
@@ -179,14 +190,17 @@ class FunctionPolicies(object):
         if is_intrinsic_no_value(else_data):
             return if_data_type
 
-        raise InvalidTemplateException("Different policy types within the same Fn::If statement is unsupported. "
-                                       "Separate different policy types into different Fn::If statements")
+        raise InvalidTemplateException(
+            "Different policy types within the same Fn::If statement is unsupported. "
+            "Separate different policy types into different Fn::If statements"
+        )
 
 
 class PolicyTypes(Enum):
     """
     Enum of different policy types supported by SAM & this plugin
     """
+
     MANAGED_POLICY = "managed_policy"
     POLICY_STATEMENT = "policy_statement"
     POLICY_TEMPLATE = "policy_template"

@@ -11,7 +11,7 @@ Resources:
           return response;
         };
       Handler: index.handler
-      Runtime: nodejs8.10
+      Runtime: nodejs12.x
       Events:
         Api:
           Type: Api
@@ -26,3 +26,16 @@ Resources:
                 ]
             Method: Put
             Path: /get
+        Any:
+          Type: Api
+          Properties:
+            Auth:
+              ResourcePolicy:
+                AwsAccountWhitelist: [
+                  "12345"
+                ]
+                AwsAccountBlacklist: [
+                  "67890"
+                ]
+            Method: any
+            Path: /any
